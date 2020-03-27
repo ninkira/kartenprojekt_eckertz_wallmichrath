@@ -1,0 +1,42 @@
+		/*selbsterklärend*/
+		html, body {
+			height: 100%;
+			margin: 0;
+			
+		}
+		#gotmapid {
+			width: 900px;
+			height: 550px;
+			z-index: 1;
+			position: fixed;
+		}
+		.centeredElement{
+			text-align: center;
+			margin-bottom: 0.2%;
+			}
+		/* überschreibt die Standard Klassen aus Leaflet um die möglichkeit zu bieten ein eingenes Bild in die
+		Layercontrol einzufügen und Layer zu bearbeiten
+		Link: https://unpkg.com/leaflet@1.6.0/dist/leaflet.css*/ 
+		.leaflet-control-layers {
+			left: 5px;
+			top: 50px;
+			
+		}
+		.leaflet-control-layers-toggle {
+			background-image: url(images/ironThrone5.png) !important;
+			width: 32px !important;
+			height: 40x !important;
+		}
+		.characterButton {
+			border: 2px solid burlywood;
+			border-radius: 5%;
+			background-color: white;
+		}
+		#adminButton {
+		
+				border: 2px solid #00003d;
+				border-radius: 5%;
+				font-weight: bold;
+				background-color: white;
+			
+		}

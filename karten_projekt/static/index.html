@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>A song of ice and fire</title>
+	<link href="./gotmap.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+		integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+		crossorigin="" />
+
+	<style>
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		/* The Modal (background) */
+		.modal {
+			display: none;
+			/* Hidden by default */
+			position: fixed;
+			/* Stay in place */
+			z-index: 10;
+			/* Sit on top */
+			padding-top: 100px;
+			/* Location of the box */
+			left: 0;
+			top: 0;
+			width: 100%;
+			/* Full width */
+			height: 100%;
+			/* Full height */
+			overflow: auto;
+			/* Enable scroll if needed */
+			background-color: rgb(0, 0, 0);
+			/* Fallback color */
+			background-color: rgba(0, 0, 0, 0.4);
+			/* Black w/ opacity */
+		}
+
+		/* Modal Content */
+		.modal-content {
+			background-color: #fefefe;
+			margin: auto;
+			padding: 20px;
+			border: 1px solid #888;
+			width: 80%;
+		}
+
+		/* The Close Button */
+		.close {
+			color: #aaaaaa;
+			float: right;
+			font-size: 28px;
+			font-weight: bold;
+		}
+
+		.close:hover,
+		.close:focus {
+			color: #000;
+			text-decoration: none;
+			cursor: pointer;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+		integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+		crossorigin=""></script>
+	<script src="lib/jquery.min.js"></script>
+	<!--<script type="text/javascript" src="./gotmap.js"></script-->
+</head>
+
+<!--Informationen der Seite-->
+
+<body>
+	<!-- The Modal -->
+	<div id="myModal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<p>Some text in the Modal..</p>
+		</div>
+
+	</div>
+
+
+	<div id="header" class="colseparator">
+
+		<img src="images/kartenprojekt_logo.PNG" height="100" length="250">
+	</div>
+	<div class="centeredElement">
+		<!--Button für die Adminfunktion und das Aufrufen von historischen Informationen-->
+		<button id="adminButton" onClick="adminFunction()">Admin Mode</button> | <b>Historische Informationen
+			Charaktere:</b>
+		<button class="characterButton" onClick="charInfG(54)">Robb Stark</button>
+		<button class="characterButton" onClick="charInfG(55)">Catelyn Stark</button>
+		<button class="characterButton" onClick="charInfG(56)">Jamie Lannister</button>
+		<button class="characterButton" onClick="charInfG(57)">Tywin Lannister</button>
+		<button class="characterButton" onClick="charInfG(58)">Stannis Baratheon</button>
+		<button class="characterButton" onClick="charInfG(59)">Renly Baratheon</button>
+		<button class="characterButton" onClick="charInfG(60)">Joffrey Baratheon</button>
+	</div>
+	<div id="landkarte" class="col1of2" style="width: 100%;">
+
+
+		<!--Wrapper-->
+		<div id="gotmapid">
+			<script>
+			// für Marker und Map stmts siehe https://leafletjs.com/reference-1.6.0.html
+				// basic map formating
+				$('#landkarte').css({
+					"width": "100%",
+					"margin": "auto"
+
+				});
+				$('#gotmapid').css({
+					"width": "98%",
+					"position": "fixed",
+					"left": "1%"
+				});
+
+				// admin mod var; if true = adminMode
+				var adminMode = false;
+				var characterarray = [];
+				function charInfG(i) {
+					alert("Hintergrundinformationen: " + characterarray[i]);
+				};
+
+				// active marker um sicherzugehen, dass wirklich nur der angeklickte marker bearbeitet oder gelöscht wird
+				var activeMarker = null;
+				var activeLongitude = "";
+				var activeLatitude = "";
+
+				// allgemeine layergroups 
+				var cities = L.layerGroup();
+				var battles = L.layerGroup();
+				var castles = L.layerGroup();
+				//campaign layergroups
+				var warRiverland = L.layerGroup([]);
+				var wolfAgainstLion = L.layerGroup([]);
+				var crowningFiveKings = L.layerGroup([]);
+				var attackOfHouseGreyjoy = L.layerGroup([]);
+				var clashOfKings = L.layerGroup([]);
+				var lannRevenge = L.layerGroup([]);
+				var fallOfKings = L.layerGroup([]);
+				var feastingCrows = L.layerGroup([]);
+				var warNorth = L.layerGroup([]);
+
+
+
+				// character layergroups
+
+				//stark
+				var rStark = L.layerGroup();
+				var cStark = L.layerGroup();
+				//lannister
+				var jLannister = L.layerGroup();
+				var tLannister = L.layerGroup();
+				//baratheon
+				var sBaratheon = L.layerGroup();
+				var rBaratheon = L.layerGroup();
+				var jBaratheon = L.layerGroup();
+				//greyjoy
+				var bGreyjoy = L.layerGroup();
+
+
+
+
+				// character points
+				var rStarkPoints = [];
+				var cStarkPoints = [];
+				var jLannisterPoints = [];
+				var tLannisterPoints = [];
+				var sBaratheonPoints = [];
+				var rBaratheonPoints = [];
+				var jBaratheonPoints = [];
+				//console.debug("rStarkPoints" + rStarkPoints);
+
+				// icons for markers
+				var battleIcon = L.icon({
+
+					iconUrl: "images/battleIcon.png",
+					iconSize: [30, 30],
+					iconAnchor: [15, 13],
+					popupAnchor: [0, -15],
+					shadowUrl: 'my-icon-shadow.png',
+					shadowSize: [68, 95],
+					shadowAnchor: [22, 94]
+
+
+				});
+
+				var cityIcon = L.icon({
+
+					iconUrl: "images/cityIcon.png",
+					iconSize: [30, 30],
+					iconAnchor: [15, 13],
+					popupAnchor: [0, -15],
+					shadowUrl: 'my-icon-shadow.png',
+					shadowSize: [68, 95],
+					shadowAnchor: [22, 94]
+
+
+				});
+
+				var castleIcon = L.icon({
+
+					iconUrl: "images/castleIcon.PNG",
+					iconSize: [30, 30],
+					iconAnchor: [15, 13],
+					popupAnchor: [0, -15],
+					shadowUrl: 'my-icon-shadow.png',
+					shadowSize: [68, 95],
+					shadowAnchor: [22, 94]
+
+
+				});
+				var relevantIcon = L.icon({
+
+					iconUrl: "images/relevantIcon.PNG",
+					iconSize: [30, 30],
+					iconAnchor: [15, 13],
+					popupAnchor: [0, -15],
+					shadowUrl: 'my-icon-shadow.png',
+					shadowSize: [68, 95],
+					shadowAnchor: [22, 94]
+
+
+				});
+
+				L.icon = function (options) {
+					return new L.Icon(options);
+				};
+
+				// erschaffung der map 
+				var map = L.map('gotmapid', {
+					crs: L.CRS.Simple,
+					minZoom: -1,
+					layers: [cities, castles, rStark, cStark]
+				});
+
+				var bounds = [[0, 0], [5799, 4100]];
+				var image = L.imageOverlay('westeros.png', bounds).addTo(map);
+
+				map.fitBounds(bounds);
+
+				// add layers to map
+				var baseLayers = {};
+
+				//einzelne Layergruppen, Namen selbsterklärend
+				var placeOverlays = {
+					"<img src='images/cityIcon.png' height=12>Städte/Orte": cities,
+					"<img src='images/battleIcon.png' height=12>Schlachten": battles,
+					"<img src='images/castleIcon.png' height=12>Burgen": castles,
+				}
+				var characterOverlays = {
+					"<img src='images/houseStark.png' height=14>Robb Stark": rStark,
+					"<img src='images/houseStark.png' height=14>Caitlin Stark": cStark,
+					"<img src='images/houseLannister.png' height=14>Jamie Lannister": jLannister,
+					"<img src='images/houseLannister.png' height=14>Tywin Lannister": tLannister,
+					"<img src='images/houseBaratheon.png' height=14>Stanis Baratheon": sBaratheon,
+					"<img src='images/houseBaratheon.png' height=14>Renley Baratheon": rBaratheon,
+					"<img src='images/houseBaratheon.png' height=14>Joffrey Baratheon": jBaratheon,
+					"<img src='images/houseGreyjoy.png' height=14>Baleon Graufreud": bGreyjoy
+				}
+				var campaignOverlays = {
+					"<img src='images/battleIcon.png' height=12>Krieg um die Flusslande": warRiverland,
+					"<img src='images/battleIcon.png' height=12>Der Wolf gegen den Löwen": wolfAgainstLion,
+					"<img src='images/battleIcon.png' height=12>Die Krönung von fünf Königen": crowningFiveKings,
+					"<img src='images/battleIcon.png' height=12>Aufstieg des Kraken": attackOfHouseGreyjoy,
+					"<img src='images/battleIcon.png' height=12>Kampf der Könige": clashOfKings,
+					"<img src='images/battleIcon.png' height=12>Der Wind dreht sich": lannRevenge,
+					"<img src='images/battleIcon.png' height=12>Der Fall der Könige": fallOfKings,
+					"<img src='images/battleIcon.png' height=12>Ein Festessen für die Krähen": feastingCrows,
+					"<img src='images/battleIcon.png' height=12>Krieg im Norden": warNorth,
+
+				}
+
+				//Layercontrol
+				var placeLayers1 = L.control.layers(baseLayers, placeOverlays).addTo(map);
+				var placeLayers2 = L.control.layers(baseLayers, characterOverlays).addTo(map);
+				var placeLayers3 = L.control.layers(null, campaignOverlays).addTo(map);
+
+				map.on('click', function (e) {
+					var coord = e.latlng;
+					var lat = coord.lat;
+					var lng = coord.lng;
+					console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
+
+
+					// ajax holen, um Daten zu lesen
+					// source: https://api.jquery.com/jquery.ajax/ - hier findet sich der verwendete Grundaufbau
+					var jqxhr = $.ajax({
+						method: "GET",
+						crossDomain: true,
+						url: "readDB",
+						data: {
+							latitude: lat,
+							longitude: lng
+						}
+					}).done(function (r1, textStatus, jqXHR) {
+						try {
+							console.log("Antwort: " + r1);
+
+							var j1 = JSON.parse(r1);
+							if (j1.error === true) {
+								if (typeof j1.record === 'undefined') {
+									if (adminMode == true) {
+										console.log("adminmode true, erschaffe punkt");
+										insertMarker(lng, lat);
+									}
+									//var marker = L.marker([lat, lng]).addTo(map);
+
+									//marker.on('click', onClick);
+								}
+							};
+
+						} catch (err) {
+							console.log(err);
+						}
+					}).fail(function (err) {
+						console.log(err.statusText);
+						return;
+					}).always(function () {
+						// nope
+					});
+				});
+
+				function insertMarker(longitude, latitude) {
+				
+					var insertURL = "insertFormular.html";
+					insertURL += "?longitude=" + longitude;
+					insertURL += "&latitude=" + latitude;
+					//	window.open(insertURL);
+					var h = $('#gotmapid').height();
+					$('#myIframe').height(h);
+					$('#myIframe').attr("src", insertURL);
+				}
+
+				function showMarker(record) {
+					var marker = L.marker([record.latitude, record.longitude]).addTo(map);
+					marker.bindPopup(record.name);
+					// onclick öffnet Editor
+					marker.on('click', onClick);
+
+				}
+				// onclick auf den marker 
+				function onClick(e) {
+					if (adminMode == true) {
+						console.log("im admin modus, editiere nun punkt");
+						var coord = e.latlng;
+						var lat = coord.lat;
+						var lng = coord.lng;
+						console.log("You clicked the marker at latitude: " + lat + " and longitude: " + lng);
+						var URL = "formular.html";
+						// Reihenfolge ist egal, da by name und nicht by position
+						URL += "?lat=" + lat;
+						URL += "&lng=" + lng;
+						activeMarker = this;
+						activeLatitude = "" + lat;
+						activeLongitude = "" + lng;
+
+						var h = $('#gotmapid').height()
+						
+						$('#myIframe').height(h);
+						$('#myIframe').attr("src", URL);
+						//	window.open(URL);
+
+					} else {
+						console.log("no admin mode; kein editieren des punktes möglich");
+					}
+				};
+
+				// initialisierung der marker 
+
+				var jqxhr = $.ajax({
+					method: "GET",
+					crossDomain: true,
+					url: "readAll",
+					data: {
+
+					}
+				}).done(function (r1, textStatus, jqXHR) {
+					try {
+						console.log("Antwort: " + r1);
+
+						var j1 = JSON.parse(r1);
+						if (j1.error === true) {
+							alert("Fehler beim lesen: " + j1.message);
+						} else {
+							if (typeof j1.records === 'undefined') {
+								alert("Keine Daten gefunden :(");
+							} else {
+								for (var index = 0; index < j1.records.length; index++) {
+
+									var record = j1.records[index];
+									var coor = L.latLng([record.latitude, record.longitude]);
+									
+									var popup = L.popup()
+										.setContent('<h1>' + record.name + '</h1>' + '<br />' + '<h2>' + "Information/Plot" + '</h2>' + '<br/>' + record.info);
+									//der einzige Zweck der Funktion dient darin den Code zu kürzen,
+									//da durch sie sowohl "battle", als auch "relevantPoints" durch die
+									//Datenbank gehen
+									function abcd(battleMarker) {
+										switch (record.kampagnecategory) {
+											case "warRiverland":
+												battleMarker.addTo(warRiverland);
+												break;
+											case "wolfAgainstLion":
+												battleMarker.addTo(wolfAgainstLion);
+												break;
+											case "crowningFiveKings":
+												battleMarker.addTo(crowningFiveKings);
+												break;
+											case "attackOfHouseGreyjoy":
+												battleMarker.addTo(attackOfHouseGreyjoy);
+												break;
+											case "clashOfKings":
+												battleMarker.addTo(clashOfKings);
+												break;
+											case "lannRevenge":
+												battleMarker.addTo(lannRevenge);
+												break;
+											case "fallOfKings":
+												battleMarker.addTo(fallOfKings);
+												break;
+											case "feastingCrows":
+												battleMarker.addTo(feastingCrows);
+												break;
+											case "warNorth":
+												battleMarker.addTo(warNorth);
+												break;
+										}
+									}
+									switch (record.placecategory) {
+										case "city":
+											var cityMarker = L.marker(coor, { icon: cityIcon });
+											cityMarker.addTo(cities);
+											cityMarker.bindPopup(popup);
+											cityMarker.on('click', onClick);
+											break;
+										case "battle":
+											var battleMarker = L.marker(coor, { icon: battleIcon })
+											battleMarker.addTo(battles);
+											battleMarker.bindPopup(popup);
+											battleMarker.on('click', onClick);
+											//siehe oben
+											abcd(battleMarker);
+											break;
+										case "relevantPoint":
+											battleMarker.addTo(battles);
+											var battleMarker = L.marker(coor, { icon: relevantIcon })
+											battleMarker.bindPopup(popup);
+											battleMarker.on('click', onClick);
+											//siehe oben
+											abcd(battleMarker);
+											break;
+
+										case "castle": // gesamt array
+											
+											var castleMarker = L.marker(coor, { icon: castleIcon });
+											castleMarker.addTo(castles);
+											castleMarker.bindPopup(popup);
+											castleMarker.on('click', onClick);
+											break;
+										case "wayPoint":
+											switch (record.charactercategory) {
+												case "robb":
+													rStarkPoints.push(coor);
+													break;
+												case "caitlyn":
+													cStarkPoints.push(coor);
+													//auskommentierter Teil dient dazu unsichtbare Punkte notfalls
+													//sichtbar zu machen
+													/*var battleMarker = L.marker(coor, {icon: battleIcon})
+													battleMarker.addTo(battles);
+													battleMarker.bindPopup(popup);
+													battleMarker.on('click', onClick);*/
+													break;
+												case "jamie":
+													jLannisterPoints.push(coor);
+													break;
+												case "tywin":
+													tLannisterPoints.push(coor);
+													break;
+												case "stannis":
+													sBaratheonPoints.push(coor);
+													break;
+												case "renly":
+													rBaratheonPoints.push(coor);
+													break;
+												case "joffrey":
+													jBaratheonPoints.push(coor);
+													break;
+
+											}
+										case "characterInfo":
+											switch (record.charactercategory) {
+												case "robb":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "caitlyn":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "jamie":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "tywin":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "stannis":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "renly":
+													characterarray.push(record.historicalbackground);
+													break;
+												case "joffrey":
+													characterarray.push(record.historicalbackground);
+													break;
+											}
+
+									}
+								}
+								//erstellen der polylines mit eigenem Popup
+								var robbTravel = L.polyline(rStarkPoints, { color: 'white' }).bindPopup('Robb Stark').addTo(rStark);
+								var cTravel = L.polyline(cStarkPoints, { color: 'white' }).bindPopup('Caitlyn Stark').addTo(cStark);
+								var jlTravel = L.polyline(jLannisterPoints, { color: 'red' }).bindPopup('Jamie Lannister').addTo(jLannister);
+								var tTravel = L.polyline(tLannisterPoints, { color: 'red' }).bindPopup('Tywin Lannister').addTo(tLannister);
+								var sTravel = L.polyline(sBaratheonPoints, { color: 'yellow' }).bindPopup('Stannis Baratheon').addTo(sBaratheon);
+								var rTravel = L.polyline(rBaratheonPoints, { color: 'yellow' }).bindPopup('Renly Baratheon').addTo(rBaratheon);
+								var jbTravel = L.polyline(jBaratheonPoints, { color: 'yellow' }).bindPopup('Joffrey Baratheon').addTo(jBaratheon);
+
+							}
+						}
+					} catch (err) {
+						alert("Fehler: " + err);
+						console.log(err.stack);
+					}
+				}).fail(function (err) {
+					console.log(err.statusText);
+					return;
+				}).always(function () {
+					// nope
+				});
+
+				function deleteMarker(latitude, longitude, name) {
+					if (activeLongitude == longitude && activeLatitude == latitude) {
+						alert("if zweig: Aufgerufen mit: " + latitude + " " + longitude + " " + name + ".");
+						map.removeLayer(activeMarker);
+						alert("Marker wird aktiv gelöscht");
+
+					} else {
+						alert("es wurde ein neuer marker gesetzt, kein löschen möglich");
+					}
+				}
+
+				function updateMarker(record) {
+				
+					var longitude = record.longitude;
+					var latitude = record.latitude;
+					var name = record.name;
+					if (activeLongitude == longitude && activeLatitude == latitude) {
+						activeMarker.bindPopup(name);
+					} else {
+						alert("es wurde ein neuer marker gesetzt, keine Änderung möglich");
+					}
+				}
+				function closeIFrame() {
+					
+					$("#myIframe").contents().empty();
+				}
+
+				function adminFunction() {
+					var passwortNum = 100;
+					var randomNum = Math.floor(Math.random() * 100);
+					var rightSolution = passwortNum - randomNum;
+					var userSolution = prompt("Bitte subtrahiere diese Nummer von der Passwort-Nummer, um in den Adminmodus zu kommen: " + randomNum, "Lösung");
+					if (userSolution == rightSolution) {
+						alert("Korrekte Antwort. Du gelangst jetzt in den Adminmodus");
+						$('#eingaben').width("40%");
+						$('#gotmapid').width("58%");
+						adminMode = true;
+					} else {
+						adminMode = false;
+						alert("Falsche Antwort");
+					}
+				}
+
+			</script>
+		</div>
+	</div>
+	<div id="eingaben" class="col2of2" style="width: 0%;">
+		<iframe id="myIframe" style="width: 80%;">
+
+		</iframe>
+	</div>
+
+</body>
+
+</html>

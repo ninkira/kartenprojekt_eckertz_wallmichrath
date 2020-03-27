@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>A song of ice and fire</title>
+    <link href="./gotmap.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        span {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            font-weight: bold;
+
+        }
+
+        input[type=text],
+        select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        div {
+            border-radius: 5px;
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+    <script src="lib/jquery.min.js"></script>
+
+    <!--<script type="text/javascript" src="./gotmap.js"></script-->
+</head>
+
+<!--Informationen der Seite-->
+
+<body>
+    <!-- Eingabe Formular; Analog zu Formular.html -->
+    <h1>GOT InsertMarker Info</h1>
+    <div>
+        <form class="formular">
+            <label for="lngF">Longitude:</label>
+            <span id="lngF">Hier könnte Ihre Longitude stehen.</span>
+
+            <label for="latF">Latitude:</label>
+            <span id="latF">Hier könnte Ihre Latitude stehen.</span>
+
+            <label for="nameF">Name:</label>
+            <input type="text" id="nameF" name="nameF">
+
+            <label for="infoF">Info:</label>
+            <input type="text" id="infoF" name="infoF">
+
+            <label for="iconF">Icon:</label>
+            <input type="text" id="iconF" name="iconF">
+
+            <label for="historicalF">Historischer Hintergrund:</label>
+            <input type="text" id="historicalF" name="historicalF">
+
+            <label for="placeCat">Wähle eine Ortskategorie:</label>
+            <select id="placeCat" name="PlaceCategory" multiple>
+                <option value="city">Stadt/Ort</option>
+                <option value="battle">Schlacht</option>
+                <option value="castle">Burg</option>
+                <option value="relevantPoint">Relevanter Punkt</option>
+                <option value="wayPoint">Wegpunkt</option>
+                <option value="characterInfo">Charakterinfo</option>
+            </select>
+
+            <label for="charCat">Wähle einen Charakter:</label>
+            <select id="charCat" name="Character" multiple>
+                <option value="robb">Robb Stark</option>
+                <option value="caitlyn">Caitlyn Stark</option>
+                <option value="jamie">Jamie Lannister</option>
+                <option value="tywin">Tywin Lannister</option>
+                <option value="joffrey">Joffrey Baratheon</option>
+                <option value="baleon">Baleon Greyjoy</option>
+                <option value="stannis">Stannis Baratheon</option>
+                <option value="renly">Renly Baratheon</option>
+            </select>
+
+            <label for="houseCat">Wähle ein Haus:</label>
+            <select id="houseCat" name="HouseCategory" multiple>
+                <option value="stark">Stark</option>
+                <option value="baratheon">Baratheon</option>
+                <option value="lannister">Lannister</option>
+                <option value="greyjoy">Greyjoy</option>
+            </select>
+
+            <label for="kampagneCat">Wähle eine Kampagne:</label>
+            <select id="kampagneCat" name="kampgneCategory">
+                <option value="noKampagne">Keine Kampgne</option>
+                <option value="warRiverland">Krieg um die Flusslande</option>
+                <option value="wolfAgainstLion">Der Wolf gegen den Löwen</option>
+                <option value="crowningFiveKings">Die Krönung von fünf Königen</option>
+                <option value="attackOfHouseGreyjoy">Aufstieg des Kraken</option>
+                <option value="clashOfKings">Krieg der fünf Könige</option>
+                <option value="lannRevenge">Der Wind dreht sich </option>
+                <option value="fallOfKings">Der Fall der Könige</option>
+                <option value="feastingCrows">Ein Festessen für die Krähen</option>
+                <option value="warNorth">Krieg im Norden</option>
+            </select>
+        </form>
+
+        <button id="speicherBtn">Speichern</button>
+        <button id="abbrechenBtn">Abbrechen</button>
+    </div>
+
+
+
+
+    <script>
+        // wird ausgerufen wenn die HTML Ausgabe fertig ist 
+        $(document).ready(function () {
+            console.log("ready!");
+            // holen der Übergabe Parameter longitude = lng & latitude = lat
+
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            if (typeof vars.longitude === 'undefined') {
+                console.log("Fehler gefunden: vars.lng === 'undefined'");
+              
+                return;
+            } else if (typeof vars.latitude === 'undefined') {
+                console.log("Fehler gefunden: vars.lat === 'undefined'");
+
+                return;
+            } else {
+                console.log("Keine Fehler gefunden.");
+
+            }
+            var jqxhr = $.ajax({
+                method: "GET",
+                crossDomain: true,
+                url: "http://localhost:3000/readDB",
+                data: {
+                    latitude: vars.latitude,
+                    longitude: vars.longitude
+                }
+            }).done(function (r1, textStatus, jqXHR) {
+                try {
+                    console.log("Antwort: " + r1);
+
+                    var j1 = JSON.parse(r1);
+                    if (j1.error === true) {
+                        if (typeof j1.record === 'undefined') {
+
+                            $("#lngF").text(vars.longitude);
+                            $("#latF").text(vars.latitude);
+                            $("#nameF").val("");
+                            $("#infoF").val("");
+                            $("#iconF").val("");
+                            $("#historicalF").val("");
+                            $("#placeCat").val(j1.record.placecategory);
+                            $("#charCat").val(j1.record.charactercategory);
+                            $("#houseCat").val(j1.record.housecategory);
+                            $("#kampageCat").val(j1.record.kampagnecategory);
+
+                        }
+                    } else {
+                        // Daten ausgeben
+                        $("#lngF").text(j1.record.longitude);
+                        $("#latF").text(j1.record.latitude);
+                        $("#nameF").val(j1.record.name);
+                        $("#infoF").val(j1.record.info);
+                        $("#iconF").val(j1.record.icon);
+                        $("#historicalF").val(j1.record.historicalbackground);
+                        /* $("#placeCat option[value='" + j1.record.placecategory + "']").attr('selected', 'selected');
+                         $("#charCat option[value='" + j1.record.charactercategory + "']").attr('selected', 'selected');
+                         $("#houseCat option[value='" + j1.record.housecategory + "']").attr('selected', 'selected');
+                   */
+                        $("#placeCat").val(j1.record.placecategory);
+                        $("#charCat").val(j1.record.charactercategory);
+                        $("#houseCat").val(j1.record.housecategory);
+                        $("#kampagneCat option[value='" + j1.record.kampagnecategory + "']").attr('selected', 'selected');
+                        console.log("kampagne insert formular vals: " + j1.record.kampagnecategory);
+
+                    }
+
+                } catch (err) {
+                    console.log(err);
+                }
+            }).fail(function (err) {
+                console.log(err.statusText);
+                return;
+            }).always(function () {
+                // nope
+            });
+
+        });
+        $("#speicherBtn").click(function () {
+
+            //console.log("Speicher Button clicked");
+            var record = {};
+            record.longitude = $("#lngF").text();
+            record.latitude = $("#latF").text();
+            record.name = $("#nameF").val();
+            record.info = $("#infoF").val();
+            record.icon = $("#iconF").val();
+            record.historicalbackground = $("#historicalF").val();
+            record.placecategory = $("#placeCat").val();
+            record.charactercategory = $("#charCat").val();
+            record.housecategory = $("#houseCat").val();
+            record.kampagnecategory = $("#kampagneCat").val();
+
+            // console.log("Insertformular Record: " + JSON.stringify(record, null, ""));
+
+            var jqxhr = $.ajax({
+                method: "POST",
+                crossDomain: true,
+                url: "http://localhost:3000/writeDB",
+                data: {
+                    latitude: record.latitude,
+                    longitude: record.longitude,
+                    record: record
+                }
+            }).done(function (r1, textStatus, jqXHR) {
+                console.log("r1: " + r1);
+                var j1 = JSON.parse(r1);
+                if (j1.error === true) {
+                    alert("Insert fatal error: " + j1.message);
+                } else {
+
+                    // old method
+                    // window.opener.showMarker(record);
+                    // window.close(); 
+                    // new iframe based methods
+                    parent.showMarker(record);
+                    parent.closeIFrame();
+                };
+
+            }).fail(function (err) {
+                console.log(err.statusText);
+                return;
+            }).always(function () {
+                // nope
+            });
+        });
+
+        $("#abbrechenBtn").click(function () {
+            parent.closeIFrame();
+        })
+    </script>
+</body>
+
+</html>

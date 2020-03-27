@@ -1,0 +1,24 @@
+.colseparator {
+    clear: both;
+    text-align: center;
+    font-weight: bold;
+    padding-top: 1em;
+}
+/* header*/
+.col1of1 {
+    text-align: center;
+    float: left;
+    width: 100%;
+}
+/* spalte links*/
+.col1of2 {
+    text-align: left;
+    float: left;
+    width: 49%;
+}
+/* spalte rechts*/
+.col2of2 {
+   /* text-align: left; */
+    float: right;
+    width: 49%;
+}
