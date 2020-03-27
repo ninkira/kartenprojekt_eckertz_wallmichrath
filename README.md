@@ -9,7 +9,7 @@ Die Funktionaltitäten umfassen eine digitale Karte, welche mithilfe eines Brows
 ## Installationsanleitung
 1. Download und Installation von node.js auf Ihrem Computer. 
 2. Download bzw. Clone des Projektes von GitHub
-3. Kompletieren der Projektmodule mit Commandbox-Befehl "npm install" im Projektordner
+3. Komplettieren der Projektmodule mit Commandbox-Befehl "npm install" im Projektordner
 4. Wichtig: Installation der Datenbank SQlite3 mit "npm install sqlite3" im Projektordner
 5. Start des Servers mit Commandbox-Befehl "node server.js" im Projektordner
 6. Aufruf im Browser mit localhost:3000/
